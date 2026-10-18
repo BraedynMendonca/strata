@@ -294,7 +294,7 @@ def build(sample_per_scene=22000, seed=41):
     priority_area_ha = float(priority.sum() * .09)
     summary = {
         "title": "Satellite-based urban surface-heat screening",
-        "site": "San José, California · downtown and adjacent neighborhoods",
+        "site": "San José, California (downtown and adjacent neighborhoods)",
         "bbox": bounds, "grid_shape": list(shape), "grid_file": "heat/grid.json", "images": images,
         "input_source": "Landsat 8/9 Collection 2 Level-2 surface reflectance (blue, green, red, NIR, SWIR1, SWIR2) and spectral indices.",
         "target_source": "USGS Landsat Collection 2 Level-2 surface temperature (thermal band), converted to °C and centered within acquisition to measure neighborhood heat anomaly.",

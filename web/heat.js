@@ -5,9 +5,9 @@ const slides = [...document.querySelectorAll('.slide')];
 const format = (n, d=1) => Number(n).toFixed(d);
 const modes = {
   prediction: ['prediction', 'Degrees above / below the scene median'],
-  observed: ['observed', 'Measured surface heat · relative to scene median'],
+  observed: ['observed', 'Measured surface heat relative to scene median'],
   error: ['error', 'Model estimate minus satellite measurement'],
-  priority: ['priority', 'High estimated heat + low vegetation · review only']
+  priority: ['priority', 'High estimated heat and low vegetation; review only']
 };
 function showSlide(index, updateHash=true) {
   currentSlide = Math.max(0, Math.min(slides.length-1, index));
@@ -51,13 +51,13 @@ function chartResults() {
   $('error-chart').innerHTML=svg+'</svg>';
   const target=test.find(s=>s.scene===study.prediction_scene)||test.at(-1);
   function dots(precision){const n=Math.round(precision*100);return Array.from({length:100},(_,i)=>`<i class="${i<n?'filled':''}" aria-hidden="true"></i>`).join('');}
-  $('hotspot-chart').innerHTML=`<div class="hotspot-comparison"><div class="dot-row"><span>Our model</span><div class="dot-track">${dots(target.hottest_quintile_precision)}</div><b>${format(target.hottest_quintile_precision*100)}%</b></div><div class="dot-row random"><span>Random</span><div class="dot-track">${dots(.2)}</div><b>20%</b></div></div><p class="dates-note">Aug 31: ${format(test[1].hottest_quintile_precision*100)}% · Jun 20: ${format(test[0].hottest_quintile_precision*100)}%. Each square represents about one percentage point.</p>`;
+  $('hotspot-chart').innerHTML=`<div class="hotspot-comparison"><div class="dot-row"><span>Our model</span><div class="dot-track">${dots(target.hottest_quintile_precision)}</div><b>${format(target.hottest_quintile_precision*100)}%</b></div><div class="dot-row random"><span>Random</span><div class="dot-track">${dots(.2)}</div><b>20%</b></div></div><p class="dates-note">Aug 31: ${format(test[1].hottest_quintile_precision*100)}%; Jun 20: ${format(test[0].hottest_quintile_precision*100)}%. Each square represents about one percentage point.</p>`;
   const km=study.cooling_screen_area_ha/100, percentage=km/study.modeled_area_km2*100;
   $('candidate-km').innerHTML=`${format(km)} <span>km²</span>`;
   $('candidate-percent').textContent=`${format(percentage)}% of the mapped area`;
   $('area-caption').textContent=`${format(study.modeled_area_km2)} km² studied → ${format(km)} km² flagged`;
   $('area-grid').innerHTML=Array.from({length:200},(_,i)=>`<i class="${i<Math.round(percentage*2)?'flagged':''}" aria-hidden="true"></i>`).join('');
-  const names=['Microsoft Planetary Computer · Landsat data catalog','USGS · Landsat surface-temperature product','USGS · Collection 2 science products'];
+  const names=['Microsoft Planetary Computer Landsat catalog','USGS Landsat surface-temperature product','USGS Collection 2 science products'];
   $('sources').innerHTML=study.source_urls.map((url,i)=>`<a href="${url}" target="_blank" rel="noreferrer">${names[i]} ↗</a>`).join('');
   $('method-detail').textContent=`${study.model} Eight 2022–2024 scenes train the model; two 2025 scenes are held out by date. On those later dates, mean absolute error is ${format(mean('mae_c'),2)}°C and mean date-specific RMSE is ${format(mean('rmse_c'),2)}°C. No causal intervention effect or emissions reduction is measured.`;
   $('spatial-detail').textContent=`A separate check withholds 600 m blocks across training-year images: RMSE ${format(study.spatial_holdout.rmse_c,2)}°C (baseline ${format(study.spatial_holdout.baseline_rmse_c,2)}°C), R² ${format(study.spatial_holdout.r2,2)}. All observations are from one San José study area.`;
@@ -80,7 +80,7 @@ function inspect(lat,lon){
   const pred=grid.predicted_c[row][col],obs=grid.observed_c[row][col];
   if(pred===-999||obs===-999){clear();$('pixel-copy').textContent='No valid cloud-screened observation here.';return;}
   const signed=v=>`${v>0?'+':''}${format(v)}°C`;
-  $('pixel-copy').textContent='Relative surface heat · Aug 31, 2025';
+  $('pixel-copy').textContent='Relative surface heat on Aug 31, 2025';
   $('pixel-pred').textContent=signed(pred);$('pixel-observed').textContent=signed(obs);$('pixel-error').textContent=signed(pred-obs);$('pixel-ndvi').textContent=format(grid.ndvi[row][col],2);
   $('pixel-priority').textContent=grid.priority[row][col]?'Flagged for field review':'Outside the review screen';
   if(marker)marker.remove();marker=L.circleMarker([lat,lon],{radius:7,color:'#fff',weight:2,fillColor:'#213b30',fillOpacity:.9}).addTo(map);
