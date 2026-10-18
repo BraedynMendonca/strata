@@ -2,13 +2,13 @@
 
 [Open the website](https://strata-heat.vercel.app/)
 
-I'm using satellite images and machine learning to find hotter parts of San José. The question behind Strata is whether the light reflected by a neighborhood can tell us enough about its surface heat to help decide where to investigate shade and greening.
+We're using satellite images and machine learning to find hotter parts of San José. The question behind Strata is whether the light reflected by a neighborhood can tell us enough about its surface heat to help decide where to investigate shade and greening.
 
 ## How it works
 
-Landsat records reflected sunlight and thermal measurements. I use six reflected-light bands, vegetation and moisture indices, and nearby surface patterns as inputs to an ExtraTrees model with 220 decision trees. The thermal measurements supply the training answers. They aren't input features.
+Landsat records reflected sunlight and thermal measurements. We use six reflected-light bands, vegetation and moisture indices, and nearby surface patterns as inputs to an ExtraTrees model with 220 decision trees. The thermal measurements supply the training answers. They aren't input features.
 
-The model trains on eight images from 2022–2024, then makes estimates for two 2025 images excluded from training. I compare those estimates with the thermal readings from the same test images. A separate check leaves out 600-meter map blocks during training-year evaluation.
+The model trains on eight images from 2022–2024, then makes estimates for two 2025 images excluded from training. We compare those estimates with the thermal readings from the same test images. A separate check leaves out 600-meter map blocks during training-year evaluation.
 
 The map shows degrees above or below each image's median surface temperature. It estimates relative heat on the image date, rather than forecasting tomorrow's weather.
 
@@ -65,4 +65,4 @@ Vercel serves the resulting `dist/` folder and deploys updates pushed to `main`.
 
 So far, this is one city and two later test dates. Satellite surface temperature also differs from the air temperature someone feels outside. Landsat's thermal observations have about 100 m native resolution, even though they're delivered on a 30 m grid.
 
-I haven't measured the cooling effect of an intervention. The next step is to check flagged locations on the ground and compare them with canopy, water availability, and community priorities before recommending a project.
+We haven't measured the cooling effect of an intervention. The next step is to check flagged locations on the ground and compare them with canopy, water availability, and community priorities before recommending a project.
