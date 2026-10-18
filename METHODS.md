@@ -1,4 +1,4 @@
-# Satellite surface-heat study methods
+# Strata research methods
 
 ## Question and intended use
 

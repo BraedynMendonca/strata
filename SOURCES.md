@@ -1,4 +1,4 @@
-# Satellite surface-heat study sources
+# Strata data sources
 
 Scene identifiers, acquisition dates, original asset URLs, and quality screening are produced from the Planetary Computer STAC catalog when `runoff/satellite_heat.py` runs. Downloaded local windows are cached under `data/satellite/cache/`; public-facing map products and metrics are in `web/heat/`.
 

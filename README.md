@@ -1,4 +1,4 @@
-# Satellite Surface Heat — San José
+# Strata — Satellite Surface Heat in San José
 
 A local research prototype that trains a machine-learning model on real Landsat spectral observations to predict neighborhood-scale surface-heat anomalies. The model is evaluated against later Landsat thermal observations that were excluded from training. Its map screens locations with high predicted surface heat and low greenness for further cooling research.
 

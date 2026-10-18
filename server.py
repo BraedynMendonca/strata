@@ -13,7 +13,7 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         if self.path == "/api/health":
-            payload = json.dumps({"ok": True, "project": "satellite-surface-heat"}).encode()
+            payload = json.dumps({"ok": True, "project": "strata"}).encode()
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Cache-Control", "no-store")
