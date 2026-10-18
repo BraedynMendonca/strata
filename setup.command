@@ -9,5 +9,5 @@ else
   task_python=.venv/bin/python
 fi
 "$task_python" -m pip install -r requirements.txt
-"$task_python" runoff/satellite_heat.py
-echo 'Satellite study ready. Double-click start.command.'
+"$task_python" research/satellite_heat.py
+echo 'Strata study ready. Double-click start.command.'
