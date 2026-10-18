@@ -11,7 +11,46 @@
 <main>
 <section id="problem" class="slide active" aria-labelledby="problem-title"><div class="intro-copy"><p class="eyebrow">YOUTH FOR EARTH</p><h1 id="problem-title">Find urban heat.<br><em>Focus cooling efforts.</em></h1><p class="lead">Some city surfaces get much hotter than others. Satellite data can help identify where to investigate shade and greening first.</p><div class="intro-stat"><strong>154.8 <span>km²</span></strong><p>of San José studied using<br>real Landsat observations</p></div><p class="subtle">A machine-learning study of surface heat, tested on later satellite images.</p></div><figure class="hero-map"><div class="map-location">SAN JOSÉ, CALIFORNIA <span>37.33° N, 121.89° W</span></div><img src="heat/predicted-anomaly.png" alt="Model-estimated surface heat differences across the San José study area, based on August 31, 2025 Landsat observations"><div class="map-compass" aria-hidden="true">N ↑</div><figcaption><span>SURFACE HEAT ESTIMATE FOR AUG 31, 2025</span><div class="color-key"><span>Cooler</span><i></i><span>Hotter</span></div></figcaption></figure></section>
 
-<section id="method" class="slide" aria-labelledby="method-title" hidden><div class="slide-heading"><p class="eyebrow">01 / A TESTABLE IDEA</p><h2 id="method-title">Learn heat patterns<br>from reflected light.</h2><p class="lead">Can the colors and infrared light reflected by a neighborhood reveal which surfaces are relatively hotter?</p></div><div class="method-visual"><div class="pipeline"><article><div class="spectral-graphic" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><span class="step-number">01</span><h3>Read the surface</h3><p>Six Landsat light bands, plus vegetation and moisture patterns.</p></article><span class="pipeline-arrow" aria-hidden="true">→</span><article><svg class="tree-graphic" viewBox="0 0 180 86" aria-hidden="true"><path d="M90 8V28M90 28H38V48M90 28H142V48M38 48H14V74M38 48H62V74M142 48H118V74M142 48H166V74"/><g><circle cx="90" cy="8" r="7"/><circle cx="38" cy="48" r="7"/><circle cx="142" cy="48" r="7"/><circle cx="14" cy="74" r="5"/><circle cx="62" cy="74" r="5"/><circle cx="118" cy="74" r="5"/><circle cx="166" cy="74" r="5"/></g></svg><span class="step-number">02</span><h3>Learn the relationship</h3><p>A 220-tree model links local surface patterns to relative heat.</p></article><span class="pipeline-arrow" aria-hidden="true">→</span><article><div class="heat-graphic" aria-hidden="true"></div><span class="step-number">03</span><h3>Estimate surface heat</h3><p>Predict warmer and cooler locations in images it has never trained on.</p></article></div><div class="training-timeline"><div><span class="timeline-label">LEARN</span><strong>2022—2024</strong><span>8 earlier satellite images</span></div><div class="timeline-track" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><b>→</b><i class="test-dot"></i><i class="test-dot"></i></div><div><span class="timeline-label test">CHECK</span><strong>2025</strong><span>2 later images kept out of training</span></div></div><div class="method-note"><span>Independent check</span><p>The satellite’s heat band supplies the answer for evaluation. It is excluded from the model’s inputs.</p></div></div></section>
+<section id="method" class="slide" aria-labelledby="method-title" hidden>
+  <div class="slide-heading">
+    <p class="eyebrow">01 / FROM SATELLITE DATA TO A TESTED MODEL</p>
+    <h2 id="method-title">Learn heat patterns<br>from reflected light.</h2>
+    <p class="lead"><a href="https://science.nasa.gov/mission/landsat-8/" target="_blank" rel="noreferrer">Landsat</a> is NASA and the U.S. Geological Survey’s Earth-observing satellite program. Its images capture reflected sunlight and heat emitted by the ground.</p>
+  </div>
+  <div class="method-visual">
+    <div class="pipeline">
+      <article>
+        <div class="spectral-graphic" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <span class="step-number">01</span>
+        <h3>Prepare the satellite inputs</h3>
+        <p>Remove cloudy pixels. Use six visible and infrared bands to measure vegetation, moisture and built-surface patterns, including nearby areas.</p>
+        <small class="pipeline-label">INPUT: REFLECTED LIGHT</small>
+      </article>
+      <span class="pipeline-arrow" aria-hidden="true">→</span>
+      <article>
+        <svg class="tree-graphic" viewBox="0 0 180 86" aria-hidden="true"><path d="M90 8V28M90 28H38V48M90 28H142V48M38 48H14V74M38 48H62V74M142 48H118V74M142 48H166V74"/><g><circle cx="90" cy="8" r="7"/><circle cx="38" cy="48" r="7"/><circle cx="142" cy="48" r="7"/><circle cx="14" cy="74" r="5"/><circle cx="62" cy="74" r="5"/><circle cx="118" cy="74" r="5"/><circle cx="166" cy="74" r="5"/></g></svg>
+        <span class="step-number">02</span>
+        <h3>Learn from measured heat</h3>
+        <p>Pair earlier light readings with known surface temperatures. ExtraTrees averages 220 decision trees, each learning rules that connect surface patterns to heat.</p>
+        <small class="pipeline-label">TRAINING ANSWER: THERMAL DATA</small>
+      </article>
+      <span class="pipeline-arrow" aria-hidden="true">→</span>
+      <article>
+        <div class="heat-graphic" aria-hidden="true"></div>
+        <span class="step-number">03</span>
+        <h3>Predict, then check</h3>
+        <p>Estimate heat in two unseen 2025 images using reflected light alone. Compare the estimates with the satellite’s withheld thermal readings.</p>
+        <small class="pipeline-label">OUTPUT: °C ABOVE OR BELOW THE IMAGE MEDIAN</small>
+      </article>
+    </div>
+    <div class="training-timeline">
+      <div><span class="timeline-label">TRAIN THE MODEL</span><strong>2022—2024</strong><span>8 images with light and heat measurements</span></div>
+      <div class="timeline-track" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><b>→</b><i class="test-dot"></i><i class="test-dot"></i></div>
+      <div><span class="timeline-label test">TEST ON LATER DATES</span><strong>2025</strong><span>2 images excluded from training</span></div>
+    </div>
+    <div class="method-note"><span>How the check stays fair</span><p>Thermal readings supply training answers and test results. They never enter the model as input features.</p></div>
+  </div>
+</section>
 
 <section id="results" class="slide" aria-labelledby="results-title" hidden><div class="slide-heading compact"><p class="eyebrow">02 / MEASURED PERFORMANCE</p><h2 id="results-title">Tested on later dates.<br><em>Better than a simple baseline.</em></h2></div><div class="evidence-layout"><article class="chart-panel"><div class="chart-heading"><h3>Surface-temperature prediction error</h3><span>RMSE in °C (lower is better)</span></div><div id="error-chart" class="error-chart" aria-live="polite"></div><div class="chart-legend"><span><i class="baseline-swatch"></i>Same temperature difference everywhere</span><span><i class="model-swatch"></i>Our model</span></div><p class="chart-caption">Baseline: predict the scene median at every location.</p></article><article class="hotspot-panel"><div class="result-number"><strong id="error-reduction">—</strong><span>lower average error<br>across the two test dates</span></div><div class="hotspot-heading"><h3>Did it find the hottest places?</h3><p>Among locations flagged in the hottest fifth:</p></div><div id="hotspot-chart" aria-live="polite"></div><p class="chart-caption">A match means a location was also in the satellite-measured hottest fifth. These results come from the later 2025 images.</p></article></div><div class="evidence-foot"><span>Real Landsat observations with a separate heat-band target</span><span>Surface heat differences, rather than air temperature</span></div></section>
 

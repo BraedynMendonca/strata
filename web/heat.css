@@ -3,3 +3,16 @@
 @media(prefers-reduced-motion:reduce){.slide{animation:none}*{scroll-behavior:auto!important}}@media print{.site-header,.deck-footer,.header-tools{display:none}.slide,.slide[hidden]{display:grid!important;min-height:auto;padding:30px;page-break-after:always}.slide{animation:none}body{print-color-adjust:exact}.map-body #map{height:400px}dialog{display:none}}
 
 .pixel-card h3 span{display:block;line-height:1.2}
+
+/* Keep the expanded method clear at presentation and phone sizes. */
+#method .slide-heading{margin-bottom:20px}
+#method .slide-heading .lead{font-size:16px;line-height:1.7}
+#method .pipeline article{align-self:stretch;padding:19px 22px 16px}
+#method .pipeline p{font-size:13px;line-height:1.65;max-width:330px}
+.pipeline-label{display:block;margin-top:13px;color:#607957;font-size:9px;font-weight:650;letter-spacing:.6px;line-height:1.6}
+#method .training-timeline{margin-top:6px;padding-top:20px;padding-bottom:18px}
+#method .training-timeline>div:first-child{min-width:230px}
+#method .training-timeline>div:last-child{min-width:200px}
+#method .method-note{align-items:flex-start}
+@media(max-width:1100px){#method .pipeline article{padding:16px 12px}#method .pipeline p{font-size:12px}#method .training-timeline>div:first-child,#method .training-timeline>div:last-child{min-width:180px}}
+@media(max-width:760px){#method .slide-heading .lead{font-size:14px;margin-top:16px}#method .pipeline article{padding:15px 0}#method .pipeline p{font-size:12px;max-width:none}.pipeline-label{grid-column:2;margin-top:7px;font-size:8px;letter-spacing:.4px}#method .pipeline article>div,#method .pipeline article>svg{grid-row:1/span 4}#method .training-timeline{gap:18px;padding:18px 0}#method .training-timeline>div:first-child,#method .training-timeline>div:last-child{min-width:0}#method .method-note{font-size:10px}}
