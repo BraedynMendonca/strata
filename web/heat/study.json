@@ -1,0 +1,257 @@
+{
+  "title": "Satellite-based urban surface-heat screening",
+  "site": "San Jos\u00e9, California \u00b7 downtown and adjacent neighborhoods",
+  "bbox": [
+    -121.96161386660852,
+    37.26880785510727,
+    -121.81846003436465,
+    37.38152662797909
+  ],
+  "grid_shape": [
+    267,
+    271
+  ],
+  "grid_file": "heat/grid.json",
+  "images": {
+    "prediction": {
+      "url": "heat/predicted-anomaly.png",
+      "min": -5.60211181640625,
+      "max": 5.60211181640625
+    },
+    "observed": {
+      "url": "heat/observed-anomaly.png",
+      "min": -5.60211181640625,
+      "max": 5.60211181640625
+    },
+    "error": {
+      "url": "heat/prediction-error.png",
+      "min": -2.801055908203125,
+      "max": 2.801055908203125
+    },
+    "priority": {
+      "url": "heat/cooling-screen.png",
+      "min": -5.60211181640625,
+      "max": 5.60211181640625
+    }
+  },
+  "input_source": "Landsat 8/9 Collection 2 Level-2 surface reflectance (blue, green, red, NIR, SWIR1, SWIR2) and spectral indices.",
+  "target_source": "USGS Landsat Collection 2 Level-2 surface temperature (thermal band), converted to \u00b0C and centered within acquisition to measure neighborhood heat anomaly.",
+  "train_years": [
+    "2022",
+    "2023",
+    "2024"
+  ],
+  "train_scenes": [
+    "LC09_L2SP_044034_20220620_02_T1",
+    "LC08_L2SP_044034_20230717_02_T1",
+    "LC09_L2SP_044034_20230927_02_T1",
+    "LC09_L2SP_044034_20240609_02_T1",
+    "LC08_L2SP_044034_20240617_02_T1",
+    "LC08_L2SP_044034_20240703_02_T1",
+    "LC08_L2SP_044034_20240719_02_T1",
+    "LC08_L2SP_044034_20240820_02_T1"
+  ],
+  "scene_inventory": [
+    {
+      "id": "LC09_L2SP_044034_20220620_02_T1",
+      "date": "2022-06-20",
+      "role": "training",
+      "catalog_cloud_cover_pct": 0.52,
+      "catalog_record": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/landsat-c2-l2/items/LC09_L2SP_044034_20220620_02_T1"
+    },
+    {
+      "id": "LC08_L2SP_044034_20230717_02_T1",
+      "date": "2023-07-17",
+      "role": "training",
+      "catalog_cloud_cover_pct": 5.34,
+      "catalog_record": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/landsat-c2-l2/items/LC08_L2SP_044034_20230717_02_T1"
+    },
+    {
+      "id": "LC09_L2SP_044034_20230927_02_T1",
+      "date": "2023-09-27",
+      "role": "training",
+      "catalog_cloud_cover_pct": 0.1,
+      "catalog_record": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/landsat-c2-l2/items/LC09_L2SP_044034_20230927_02_T1"
+    },
+    {
+      "id": "LC09_L2SP_044034_20240609_02_T1",
+      "date": "2024-06-09",
+      "role": "training",
+      "catalog_cloud_cover_pct": 5.57,
+      "catalog_record": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/landsat-c2-l2/items/LC09_L2SP_044034_20240609_02_T1"
+    },
+    {
+      "id": "LC08_L2SP_044034_20240617_02_T1",
+      "date": "2024-06-17",
+      "role": "training",
+      "catalog_cloud_cover_pct": 1.91,
+      "catalog_record": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/landsat-c2-l2/items/LC08_L2SP_044034_20240617_02_T1"
+    },
+    {
+      "id": "LC08_L2SP_044034_20240703_02_T1",
+      "date": "2024-07-03",
+      "role": "training",
+      "catalog_cloud_cover_pct": 0.05,
+      "catalog_record": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/landsat-c2-l2/items/LC08_L2SP_044034_20240703_02_T1"
+    },
+    {
+      "id": "LC08_L2SP_044034_20240719_02_T1",
+      "date": "2024-07-19",
+      "role": "training",
+      "catalog_cloud_cover_pct": 2.48,
+      "catalog_record": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/landsat-c2-l2/items/LC08_L2SP_044034_20240719_02_T1"
+    },
+    {
+      "id": "LC08_L2SP_044034_20240820_02_T1",
+      "date": "2024-08-20",
+      "role": "training",
+      "catalog_cloud_cover_pct": 0.03,
+      "catalog_record": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/landsat-c2-l2/items/LC08_L2SP_044034_20240820_02_T1"
+    },
+    {
+      "id": "LC08_L2SP_044034_20250620_02_T1",
+      "date": "2025-06-20",
+      "role": "held-out evaluation",
+      "catalog_cloud_cover_pct": 2.79,
+      "catalog_record": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/landsat-c2-l2/items/LC08_L2SP_044034_20250620_02_T1"
+    },
+    {
+      "id": "LC09_L2SP_044034_20250831_02_T1",
+      "date": "2025-08-31",
+      "role": "held-out evaluation",
+      "catalog_cloud_cover_pct": 0.19,
+      "catalog_record": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/landsat-c2-l2/items/LC09_L2SP_044034_20250831_02_T1"
+    }
+  ],
+  "test_scenes": [
+    {
+      "date": "2025-06-20",
+      "scene": "LC08_L2SP_044034_20250620_02_T1",
+      "valid_pixels": 172216,
+      "mae_c": 1.0538171529769897,
+      "rmse_c": 1.391196872694176,
+      "r2": 0.5599777698516846,
+      "baseline_mae_c": 1.5389560461044312,
+      "baseline_rmse_c": 2.1152657095295666,
+      "hottest_quintile_precision": 0.48933333333333334,
+      "hottest_quintile_recall": 0.488031914893617,
+      "hottest_quintile_f1": 0.48868175765645805
+    },
+    {
+      "date": "2025-08-31",
+      "scene": "LC09_L2SP_044034_20250831_02_T1",
+      "valid_pixels": 172024,
+      "mae_c": 1.9100756645202637,
+      "rmse_c": 2.464799254872755,
+      "r2": 0.2734382152557373,
+      "baseline_mae_c": 2.2518036365509033,
+      "baseline_rmse_c": 2.899561085864828,
+      "hottest_quintile_precision": 0.4725,
+      "hottest_quintile_recall": 0.47187083888149134,
+      "hottest_quintile_f1": 0.47218520986009327
+    }
+  ],
+  "spatial_holdout": {
+    "split": "Held-out 600m spatial blocks across the 2022\u20132024 training acquisitions",
+    "n": 35706,
+    "mae_c": 1.4024604037248132,
+    "rmse_c": 1.9445782875577742,
+    "r2": 0.421168251595078,
+    "baseline_mae_c": 1.8710757493972778,
+    "baseline_rmse_c": 2.5726749960468043
+  },
+  "spectral_baseline": {
+    "model": "Ridge regression on the same spectral features",
+    "mae_c": 1.592647910118103,
+    "rmse_c": 2.1370948586017104,
+    "r2": 0.3008842468261719
+  },
+  "model": "ExtraTrees regression; 220 trees; minimum leaf 3; six reflectance bands, four spectral indices and 90/270m neighborhood context; no thermal input features.",
+  "prediction_date": "2025-08-31",
+  "prediction_scene": "LC09_L2SP_044034_20250831_02_T1",
+  "cloud_cover_scene_pct": 0.19,
+  "valid_pixels": 172024,
+  "modeled_area_km2": 154.8,
+  "cooling_screen_area_ha": 1620.7,
+  "cooling_screen_definition": "Upper quartile of positive predicted surface-heat anomaly and NDVI below 0.25. Screening only; does not establish planting feasibility or cooling causality.",
+  "feature_importance": [
+    {
+      "feature": "NDVI 270m",
+      "importance": 0.1397968685067252
+    },
+    {
+      "feature": "NDBI 270m",
+      "importance": 0.11378413133209893
+    },
+    {
+      "feature": "NDMI 270m",
+      "importance": 0.10418810525045702
+    },
+    {
+      "feature": "NDVI 90m",
+      "importance": 0.09742684495089264
+    },
+    {
+      "feature": "NDBI 90m",
+      "importance": 0.06593006916980375
+    },
+    {
+      "feature": "NDMI 90m",
+      "importance": 0.0609488085135975
+    },
+    {
+      "feature": "NDVI",
+      "importance": 0.06051221411241086
+    },
+    {
+      "feature": "NIR",
+      "importance": 0.05040313308303619
+    },
+    {
+      "feature": "NDWI",
+      "importance": 0.04523797420683896
+    },
+    {
+      "feature": "NDMI",
+      "importance": 0.042425243131173
+    },
+    {
+      "feature": "SWIR-2",
+      "importance": 0.0413754885598813
+    },
+    {
+      "feature": "SWIR-1",
+      "importance": 0.04053407459922301
+    },
+    {
+      "feature": "NDBI",
+      "importance": 0.0398993526979902
+    },
+    {
+      "feature": "Blue",
+      "importance": 0.03408655076697559
+    },
+    {
+      "feature": "Green",
+      "importance": 0.03191636288796558
+    },
+    {
+      "feature": "Red",
+      "importance": 0.03153477823093024
+    }
+  ],
+  "temperature_reference": "Anomaly relative to the median valid surface temperature in each acquisition, not absolute air temperature.",
+  "limits": [
+    "Thermal surface temperature is not human-level air temperature or personal heat exposure.",
+    "The model predicts spatial patterns from reflective bands; the thermal band is held out as the target, not used as an input.",
+    "Evaluation dates are temporally held out (2025) and spatial-block evaluation is also reported; all are from the same Landsat path/row and one San Jos\u00e9 AOI.",
+    "A cooling-screen pixel is not a planting recommendation. Shade feasibility, water availability, equity, tree survival, and actual cooling effect require field and community validation.",
+    "Landsat pixels are 30 m; geospatial resampling is for web display and does not create finer measured resolution."
+  ],
+  "source_urls": [
+    "https://planetarycomputer.microsoft.com/dataset/landsat-c2-l2",
+    "https://www.usgs.gov/landsat-missions/landsat-collection-2-surface-temperature",
+    "https://www.usgs.gov/landsat-missions/landsat-collection-2-level-2-science-products"
+  ],
+  "generated_utc": "2026-10-18T18:36:04.553696+00:00"
+}

@@ -1,0 +1,17 @@
+.venv*/
+__pycache__/
+*.pyc
+results/cache/
+results/real/cache/
+results/models/
+*.out
+*.rpt
+.DS_Store
+data/satellite/cache/
+
+.env
+.env.*
+.vercel/
+dist/
+outputs/
+node_modules/

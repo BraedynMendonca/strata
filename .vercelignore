@@ -1,0 +1,10 @@
+.venv*
+data/
+results/
+outputs/
+work/
+tests/
+web/legacy/
+web/real/
+__pycache__/
+.git/
