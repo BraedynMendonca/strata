@@ -9,3 +9,11 @@ Scene identifiers, acquisition dates, original asset URLs, and quality screening
 - [OpenStreetMap](https://www.openstreetmap.org/copyright) — basemap context only; map tiles are not model inputs.
 
 Landsat thermal observations provide satellite-derived land-surface temperature, not ground thermometers or personal heat exposure. Reflective bands and their indices are ML predictors; thermal band values are held out as the supervised target. The display’s derived model outputs are not independent observations.
+
+## Featured starting places (checked October 18, 2026)
+
+- [San Pedro Square Market — Visit San Jose](https://www.sanjose.org/listings/san-pedro-square-market): 87 North San Pedro Street. The listing's map metadata supplies 37.336446, -121.894151.
+- [San José State University main campus](https://www.sjsu.edu/map/index.php): official campus address One Washington Square. ArcGIS World Geocoding matched the campus POI at 37.3357957, -121.882134 (100 match score).
+- [Guadalupe River Park Conservancy visitor center](https://grpg.org/visit/guadalupe-gardens/visitor-and-education-center/): official address 438 Coleman Avenue. ArcGIS World Geocoding matched that address at 37.341509613833, -121.903007375963 (PointAddress; 100 match score).
+
+ArcGIS was used only to check reference positions during development. There are no runtime geocoding requests. Coordinates designate the centers of neighborhood comparison circles, not precise boundaries or permission to access the properties. Original-source URLs, coordinate provenance and check date are included in `web/places.json`.
