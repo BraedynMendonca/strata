@@ -66,3 +66,27 @@ Vercel serves the resulting `dist/` folder and deploys updates pushed to `main`.
 So far, this is one city and two later test dates. Satellite surface temperature also differs from the air temperature someone feels outside. Landsat's thermal observations have about 100 m native resolution, even though they're delivered on a 30 m grid.
 
 We haven't measured the cooling effect of an intervention. The next step is to check flagged locations on the ground and compare them with canopy, water availability, and community priorities before recommending a project.
+
+## Explore, compare, and prepare a field review
+
+Choose **Explore the heat map**, then use one of three featured starting places or click inside the study footprint. You can also enter coordinates using the expandable form.
+
+1. Select **Compare this area · 300 m** for up to three locations. Circles show the area being summarized, with modeled/observed heat, greenness and the fraction meeting review criteria.
+2. Open **Explore screening criteria** to compare the original saved screen with custom thresholds. Changing criteria changes the shortlist; it does not predict cooling. The archived 16.2 km² study total is preserved.
+3. Add field-review notes and open **Build a field-review brief**. Print/save a PDF through your browser, or download the numerical evidence as CSV. Remove/clear selections with a one-step undo.
+
+Locations, notes, criteria, and map view stay in memory while navigating the five sections. Reloading resets the session. There are no accounts, submissions, analytics, or automatic downloads. The live satellite overlay and comparisons remain usable if external street-map tiles fail. Outside the study or below 80% coverage, area averages are withheld.
+
+The three preset positions were checked against official venue/campus information and map metadata/geocoding. These summarize each location's surroundings, not the venue's property. The map is historical surface heat from August 31, 2025, not current weather or personal heat exposure.
+
+### Checks and supporting material
+
+```sh
+node --test tests/analysis.test.cjs
+node scripts/build.mjs
+```
+
+- [Case study](docs/CASE_STUDY.md): actual summaries for San Pedro Square and the park visitor-center surroundings, including limitations.
+- [Usability test](docs/USABILITY_TEST.md): volunteer tasks and recording template. Participant testing is pending; no recruitment or outreach was performed automatically.
+- [Implementation and verification](docs/IMPLEMENTATION.md): interaction contract, scope, browser checks and known limits.
+- `tests/browser_fixture_server.py`: local-only loading, failed-data/retry, malformed-data, no-match, and failed-basemap fixtures. These are not included in the static build.

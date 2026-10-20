@@ -1,0 +1,35 @@
+[
+  {
+    "id": "san-pedro",
+    "name": "San Pedro Square Market",
+    "kind": "Dining & shopping",
+    "address": "87 North San Pedro Street, San José",
+    "lat": 37.336446,
+    "lon": -121.894151,
+    "source": "https://www.sanjose.org/listings/san-pedro-square-market",
+    "coordinate_note": "Coordinates from the official Visit San Jose listing's data-coords attribute.",
+    "checked_date": "2026-10-18"
+  },
+  {
+    "id": "sjsu",
+    "name": "San José State main campus",
+    "kind": "University campus",
+    "address": "One Washington Square, San José",
+    "lat": 37.3357957,
+    "lon": -121.882134,
+    "source": "https://www.sjsu.edu/map/index.php",
+    "coordinate_note": "Campus POI checked with ArcGIS World Geocoding (100 match score); neighborhood reference point, not a building boundary.",
+    "checked_date": "2026-10-18"
+  },
+  {
+    "id": "guadalupe",
+    "name": "Guadalupe River Park visitor center",
+    "kind": "Park & learning center",
+    "address": "438 Coleman Avenue, San José",
+    "lat": 37.341509613833,
+    "lon": -121.903007375963,
+    "source": "https://grpg.org/visit/guadalupe-gardens/visitor-and-education-center/",
+    "coordinate_note": "Official street address matched using ArcGIS World Geocoding (PointAddress, 100 match score).",
+    "checked_date": "2026-10-18"
+  }
+]
