@@ -2,7 +2,7 @@
 
 ## Current status
 
-**Checkpoint 5 complete.** The San José research entry remains intact and the hidden-map initialization issue has been corrected. The user reviewed the mobile experience and proposal PDF, reported both look good, and asked to complete the checkpoint. The user waived the deliberate OpenStreetMap tile-failure simulation as unnecessary. The local recovery archive and checksum are refreshed below.
+**Checkpoint 6 complete; showcase package and final recovery archive are saved.** The app build is frozen at the tested state. The pitch, timed demo path, technical appendix, judge Q&A, rubric mapping, and screenshot backup are ready in the files below. No deployment is included.
 
 ## Checkpoint 0: recoverable starting point
 
@@ -182,4 +182,31 @@ Checkpoint 5 is complete. Stop here for the checkpoint review; begin Checkpoint 
 3. Two-stage cooling planner and constraint rules. **Complete.**
 4. Capacity calculator, proposal exports, and local drafts. **Complete; printable proposal reviewed and accepted by the user.**
 5. Preserve and integrate the San José research; map fix and verification recorded. **Complete; tile-failure simulation waived by the user.**
-6. Prepare the showcase pitch, demo, supporting notes, and final recovery archive.
+6. Prepare the showcase pitch, demo, supporting notes, and final recovery archive. **Complete.**
+
+## Checkpoint 6: showcase package and build freeze
+
+### Prepared
+
+- `docs/SHOWCASE_PACKAGE.md` contains a 393-word three-minute pitch, a timed 90-second demo, presenter guardrails, technical appendix, judge Q&A, and rubric mapping.
+- The demo uses Dublin High (Dublin, Alameda County) and Anna Kirchgater Elementary (Sacramento, Sacramento County), both verified in the bundled statewide dataset. Dublin High canopy is 2% in the student-use footprint and 3% across the property in the 2024 layer.
+- The demo keeps all non-source values hypothetical: 120 students, 25 minutes, and distinct capacities 36 / 90 give 900 / 2,250 student-minutes by the documented formula. A demo-only watering change from available to limited defers the future tree proposal; no site condition is represented as observed.
+- `outputs/showcase/` contains a screenshot-backup guide and authentic captures of the retained San José research route, the field-review brief, and the accepted school proposal PDF with rendered page images. Checksums are in `outputs/showcase/screenshots.sha256`.
+- The school-planner mobile screenshots were provided inline in the conversation and reviewed, but were not available as source files in the workspace to copy into the archive. The screenshot backup therefore combines preserved research screenshots with the school proposal export.
+
+### Verified
+
+- Dataset lookup confirmed both demo campuses and Dublin High's 2% / 3% canopy values. Independent arithmetic confirmed 900 and 2,250 student-minutes.
+- Pitch length is 393 words. Spoken demo lines are 99 words, leaving the remaining time for the on-screen actions and transitions.
+- All **25 tests passed**. `node scripts/build.mjs`, JavaScript syntax checks, CSS build comparison, screenshot/PDF checksums, and PDF page count passed.
+- The demo was prepared from previously exercised app flows and deterministic planner rules; no new timed live browser rehearsal was performed in this session.
+
+### Recovery point and handoff
+
+- Final archive: `outputs/checkpoints/checkpoint-06-showcase.tar.gz`
+- SHA-256 manifest: `outputs/checkpoints/checkpoint-06-showcase.sha256`
+- Presentation script and technical reference: `docs/SHOWCASE_PACKAGE.md`
+- Visual fallback package: `outputs/showcase/README.md`
+- The tested app code is frozen. The timed script uses one real campus per region, shows a meaningful hypothetical constraint change, produces the proposal export, and ends with a second California region. No measured cooling, health, emissions, endorsement, or field results are claimed.
+
+All six planned checkpoints are complete. Stop here for review; the team can rehearse from the showcase package before presenting.
