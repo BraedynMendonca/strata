@@ -2,7 +2,7 @@
 
 ## Current status
 
-**Checkpoint 5 work is saved; paused with two visual checks outstanding.** The San José research entry remains intact and the hidden-map initialization issue has been corrected. The current branch includes the saved Checkpoint 4 implementation and Checkpoint 5 map fix. Checkpoint 4 print output still needs a successful preview/PDF inspection; Checkpoint 5 still needs a phone-sized browser review. Both remain explicitly incomplete.
+**Checkpoint 5 complete.** The San José research entry remains intact and the hidden-map initialization issue has been corrected. The user reviewed the mobile experience and proposal PDF, reported both look good, and asked to complete the checkpoint. The user waived the deliberate OpenStreetMap tile-failure simulation as unnecessary. The local recovery archive and checksum are refreshed below.
 
 ## Checkpoint 0: recoverable starting point
 
@@ -124,6 +124,7 @@ Build the optional shade-opportunity calculator, printable proposal, CSV export,
 - Chrome interaction review selected Anna Kirchgater Elementary in Sacramento. With 120 students, 25 minutes, capacity 36 near-term, and 90 future, the interface displayed **900** and **2,250 student-minutes** separately and labeled both hypothetical. The proposal showed distinct student-use and whole-property canopy, the ZIP forecast date, assumptions, plan rationale/review steps, and source references.
 - Opened a fresh Chrome tab on the same local origin and confirmed it restored the campus, planner answers, calculator values, notes, and proposal from localStorage. The CSV button was exercised; the clear-draft action reported success. The temporary browser test draft was cleared afterward.
 - Static print CSS isolates the proposal. **Outstanding check:** invoking Print reached the browser print pathway, but browser automation timed out while the native print UI was handling the request. No print preview/PDF was captured, so output pagination and margins are not visually verified. This is recorded as an incomplete criterion, not a passed check.
+- Follow-up: the user supplied a two-page proposal PDF and confirmed its print layout is acceptable. Independent rendering shows the final limitations paragraph alone near the top of page 2; the user accepted this pagination.
 
 ### Recovery point
 
@@ -134,11 +135,11 @@ Build the optional shade-opportunity calculator, printable proposal, CSV export,
 
 - The calculator uses only user-entered attendance and distinct capacity. Its output describes a hypothetical activity opportunity, not observed shade or environmental impact.
 - Drafts live only in the same browser profile and device. CSV and proposal exports are the portable copies.
-- The print view still needs a successful visual review in a browser print preview or captured PDF before Checkpoint 4 can be marked complete.
+- The user-reviewed PDF is legible and accepted. Its second page contains only the final limitations paragraph, leaving most of that page blank.
 
 ### Next step
 
-The user requested continuation into Checkpoint 5 before the Checkpoint 4 print preview could be captured. The Checkpoint 4 print check remains open and should be visually completed at the next review opportunity.
+The user later provided and reviewed a proposal PDF, closing the print review. The accepted PDF's final limitations paragraph appears alone on a mostly blank second page.
 
 ## Checkpoint 5: research integration and full-product verification
 
@@ -156,26 +157,29 @@ The user requested continuation into Checkpoint 5 before the Checkpoint 4 print 
 - Chrome keyboard review confirmed the map receives focus and arrow-key panning changes its reported center. Selecting two featured locations produced valid 300 m comparison cards and exposed the field-review brief link.
 - A temporary failure server with `heat/grid.json` removed showed the explanatory unavailable-data alert, disabled dependent controls, and retry button. The production build served all local data successfully. No console errors were observed in these exercised pages.
 - Desktop layout was visually inspected. Responsive phone breakpoints are present in the stylesheet, but this session did not successfully create a phone-sized browser viewport. The phone-size check remains incomplete.
+- Prior follow-up verification: all **25** analysis, planner, calculator, and export tests passed again; `node scripts/build.mjs` and JavaScript syntax checks passed. A fresh local preview could not be opened in that session: local server binding was denied and the browser policy blocked the attempted local preview URL. At that point, no phone-size visual inspection, print-preview/PDF inspection, or deliberate tile-outage injection had been completed.
+- User-provided phone screenshots show the opening, statewide map, school search, and selected-campus evidence at a narrow viewport. The user confirmed the mobile experience looks good, including the remaining app surfaces.
+- The supplied two-page PDF was rendered and visually reviewed. Page 1 contains the proposal; page 2 contains the final limitations paragraph near the top, leaving most of the page blank. The user reviewed the proposal PDF and confirmed it is acceptable. No print-style change was retained.
+- The user waived the deliberate OpenStreetMap tile-failure simulation as unnecessary. The normal tile layer and its fallback message are implemented; the missing-grid data failure state was separately exercised and remained distinct from the basemap path.
 
 ### Recovery point
 
 - Archive: `outputs/checkpoints/checkpoint-05-verification.tar.gz`
 - SHA-256 manifest: `outputs/checkpoints/checkpoint-05-verification.sha256`
 
-### Outstanding checks
+### Scope note
 
-- Visually inspect the Checkpoint 4 printable school proposal in print preview or a captured PDF; the native print UI did not yield a screenshot during the earlier browser run.
-- Open the product in a phone-sized viewport and inspect school discovery, planner controls, research map, comparison cards, and export actions.
-- Deliberate street-tile network failure was not injected; the product's basemap fallback is implemented but not newly exercised here.
+- The basemap tile-failure scenario was not simulated at the user's direction. The browser-based mobile review and attached proposal were accepted by the user as satisfactory. This records the user's decision and does not claim a tile outage was observed in this session.
+- The PDF's final limitations paragraph falls on a mostly blank second page. It remains legible, and the user accepted the supplied PDF; no unreviewed print-style change was retained.
 
 ### Next step
 
-Resume by completing the print-preview and phone-viewport checks, fixing any issues found, updating this log, and replacing the recovery archive. Do not start Checkpoint 6 until those checks pass.
+Checkpoint 5 is complete. Stop here for the checkpoint review; begin Checkpoint 6 only when the user asks to continue.
 
 ## Checkpoints remaining
 
 2. California school discovery and evidence interface. **Complete.**
 3. Two-stage cooling planner and constraint rules. **Complete.**
-4. Capacity calculator, proposal exports, and local drafts. **Implementation saved; print visual check outstanding.**
-5. Preserve and integrate the San José research; map fix and partial verification saved; phone visual check outstanding.
+4. Capacity calculator, proposal exports, and local drafts. **Complete; printable proposal reviewed and accepted by the user.**
+5. Preserve and integrate the San José research; map fix and verification recorded. **Complete; tile-failure simulation waived by the user.**
 6. Prepare the showcase pitch, demo, supporting notes, and final recovery archive.
