@@ -2,7 +2,7 @@
 
 ## Current status
 
-**Checkpoint 4 implementation saved; paused with one visual check outstanding.** The California planner now includes an optional hypothetical shade-opportunity calculator, printable proposal, CSV export, and device-local draft recovery. The archive preserves this state. Browser print was invoked, but this session did not capture the resulting print preview or PDF for visual inspection, so Checkpoint 4 is not marked complete. Resume by inspecting the print output, fixing any layout issues, then rerunning checks and replacing the recovery archive.
+**Checkpoint 5 work is saved; paused with two visual checks outstanding.** The San José research entry remains intact and the hidden-map initialization issue has been corrected. The current branch includes the saved Checkpoint 4 implementation and Checkpoint 5 map fix. Checkpoint 4 print output still needs a successful preview/PDF inspection; Checkpoint 5 still needs a phone-sized browser review. Both remain explicitly incomplete.
 
 ## Checkpoint 0: recoverable starting point
 
@@ -138,12 +138,44 @@ Build the optional shade-opportunity calculator, printable proposal, CSV export,
 
 ### Next step
 
-Resume Checkpoint 4 by visually inspecting the printable proposal, correcting any layout issues, rerunning the targeted checks, and creating a replacement verified archive. Stop for review when that check passes. Do not begin Checkpoint 5 until then.
+The user requested continuation into Checkpoint 5 before the Checkpoint 4 print preview could be captured. The Checkpoint 4 print check remains open and should be visually completed at the next review opportunity.
+
+## Checkpoint 5: research integration and full-product verification
+
+### Implemented
+
+- Preserved the original San José Landsat research at `/research.html`, the research entry points, data links, original analysis code, and scientific imagery/data assets.
+- Fixed the initial research-map view when the page starts on another slide: Leaflet previously fit the study bounds while its map container was hidden, which could leave an over-zoomed first reveal. The map now invalidates its size and refits to study bounds after becoming visible, while retaining a user's prior map view when returning to the map.
+
+### Verified results
+
+- `node --check web/heat.js`, `node --check web/app.js`, and `node --check web/analysis.js`: passed.
+- `node --test tests/analysis.test.cjs tests/planner-rules.test.cjs tests/planner-calculator.test.cjs tests/planner-exports.test.cjs`: **25 passed**. The research test verifies the six archived scientific assets remain byte-for-byte unchanged.
+- `node scripts/build.mjs`: passed.
+- In Chrome, direct entry to `/research.html#map-section` opened at San José study bounds (center 37.32519, -121.89004; zoom 12). Starting on the opening slide and navigating to the map also produced the correct study view after the fix. The historical heat layer, featured places, selected-location evidence, and source link rendered.
+- Chrome keyboard review confirmed the map receives focus and arrow-key panning changes its reported center. Selecting two featured locations produced valid 300 m comparison cards and exposed the field-review brief link.
+- A temporary failure server with `heat/grid.json` removed showed the explanatory unavailable-data alert, disabled dependent controls, and retry button. The production build served all local data successfully. No console errors were observed in these exercised pages.
+- Desktop layout was visually inspected. Responsive phone breakpoints are present in the stylesheet, but this session did not successfully create a phone-sized browser viewport. The phone-size check remains incomplete.
+
+### Recovery point
+
+- Archive: `outputs/checkpoints/checkpoint-05-verification.tar.gz`
+- SHA-256 manifest: `outputs/checkpoints/checkpoint-05-verification.sha256`
+
+### Outstanding checks
+
+- Visually inspect the Checkpoint 4 printable school proposal in print preview or a captured PDF; the native print UI did not yield a screenshot during the earlier browser run.
+- Open the product in a phone-sized viewport and inspect school discovery, planner controls, research map, comparison cards, and export actions.
+- Deliberate street-tile network failure was not injected; the product's basemap fallback is implemented but not newly exercised here.
+
+### Next step
+
+Resume by completing the print-preview and phone-viewport checks, fixing any issues found, updating this log, and replacing the recovery archive. Do not start Checkpoint 6 until those checks pass.
 
 ## Checkpoints remaining
 
 2. California school discovery and evidence interface. **Complete.**
 3. Two-stage cooling planner and constraint rules. **Complete.**
 4. Capacity calculator, proposal exports, and local drafts. **Implementation saved; print visual check outstanding.**
-5. Preserve and integrate the San José research; complete product verification.
+5. Preserve and integrate the San José research; map fix and partial verification saved; phone visual check outstanding.
 6. Prepare the showcase pitch, demo, supporting notes, and final recovery archive.

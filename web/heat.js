@@ -28,7 +28,7 @@ function showSlide(index, updateHash=true) {
   $('next').disabled = currentSlide === slides.length-1;
   $('slide-counter').textContent = `${String(currentSlide+1).padStart(2,'0')} / 05`;
   if(updateHash) history.replaceState(null,'','#'+slides[currentSlide].id);
-  if(map && slides[currentSlide].id==='map-section') requestAnimationFrame(()=>{map.invalidateSize({pan:false});if(savedMapView)map.setView(savedMapView.center,savedMapView.zoom,{animate:false});});
+  if(map && slides[currentSlide].id==='map-section') refreshMapLayout();
   window.scrollTo(0,0);
 }
 function bindNavigation() {
@@ -76,6 +76,14 @@ function chartResults() {
 }
 function resetMap() {
   map.fitBounds([[grid.bounds[1],grid.bounds[0]],[grid.bounds[3],grid.bounds[2]]],{padding:[12,12],animate:false});
+}
+function refreshMapLayout() {
+  requestAnimationFrame(()=>{
+    if(!map)return;
+    map.invalidateSize({pan:false});
+    if(savedMapView){const view=savedMapView;savedMapView=null;map.setView(view.center,view.zoom,{animate:false});}
+    else resetMap();
+  });
 }
 function customOverlay() {
   if (customImage) return customImage;
@@ -206,7 +214,7 @@ function initMap() {
   resetMap(); setMode(activeMode);
   map.on('click',e=>inspect(e.latlng.lat,e.latlng.lng));
   inspect(places[0].lat,places[0].lon,places[0]);
-  if(slides[currentSlide].id==='map-section') requestAnimationFrame(()=>map.invalidateSize());
+  if(slides[currentSlide].id==='map-section') refreshMapLayout();
 }
 function bindExplorer() {
   $('place-search').addEventListener('input',renderPlaces);
