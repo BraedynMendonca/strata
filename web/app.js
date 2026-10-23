@@ -23,14 +23,15 @@
   }
 
   function renderMap() {
+    if (!state.campuses.length) return;
     const zoom = map.getZoom();
     state.countyLayer.clearLayers(); state.campusLayer.clearLayers(); state.markers.clear();
     if (zoom < 6) {
       for (const county of state.counties) {
-        const radius = Math.max(13, Math.min(24, 10 + Math.sqrt(county.count) * 1.45));
+        const radius = Math.max(9, Math.min(17, 7 + Math.sqrt(county.count) * .32));
         const icon = L.divIcon({className: '', html: `<span class="county-marker" style="width:${radius * 2}px;height:${radius * 2}px">${county.count}</span>`, iconSize: [radius * 2, radius * 2], iconAnchor: [radius, radius]});
         const marker = L.marker([county.lat, county.lon], {icon, title: `${county.name} County: ${county.count} campuses`});
-        marker.bindTooltip(`${county.name} County · ${county.count} campuses`);
+        marker.bindTooltip(`${county.name} County: ${county.count} campuses`);
         marker.on('click', () => map.setView([county.lat, county.lon], 7));
         state.countyLayer.addLayer(marker);
       }
@@ -41,7 +42,7 @@
     const schools = state.campuses.filter((school) => bounds.contains([school.coordinates[1], school.coordinates[0]]));
     for (const school of schools) {
       const marker = L.circleMarker([school.coordinates[1], school.coordinates[0]], {renderer: canvas, radius: state.selectedId === school.id ? 7 : 3.5, color: '#fff', weight: state.selectedId === school.id ? 2 : 0.8, fillColor: canopyColor(school.studentZoneCanopyPct), fillOpacity: .85, className: state.selectedId === school.id ? 'campus-marker selected' : 'campus-marker'});
-      marker.bindTooltip(`${school.name} · ${school.city}`);
+      marker.bindTooltip(`${school.name}, ${school.city}`);
       marker.on('click', () => selectSchool(school));
       marker.addTo(state.campusLayer); state.markers.set(school.id, marker);
     }
@@ -68,31 +69,43 @@
     $('start-planning').setAttribute('aria-expanded', 'false');
     $('evidence').hidden = false;
     $('evidence-title').textContent = school.name;
-    $('school-location').textContent = [school.city, school.county ? `${school.county} County` : '', school.district].filter(Boolean).join(' · ');
+    $('school-location').textContent = [school.city, school.county ? `${school.county} County` : '', school.district].filter(Boolean).join(', ');
     $('student-canopy').textContent = school.studentZoneCanopyPct == null ? 'Not reported' : `${school.studentZoneCanopyPct}%`;
     $('property-canopy').textContent = school.propertyCanopyPct == null ? 'Not reported' : `${school.propertyCanopyPct}%`;
+    for (const [id, value] of [['student-canopy-fill', school.studentZoneCanopyPct], ['property-canopy-fill', school.propertyCanopyPct]]) {
+      $(id).parentElement.hidden = value == null;
+      $(id).parentElement.parentElement.classList.toggle('canopy-missing', value == null);
+      $(id).style.width = `${Math.max(0, Math.min(100, value ?? 0))}%`;
+    }
     renderForecast(school);
     const marker = state.markers.get(school.id);
     if (marker) marker.setStyle({radius: 7, weight: 2});
     $('school-results').querySelectorAll('.result').forEach((button) => button.setAttribute('aria-current', button.dataset.id === school.id ? 'true' : 'false'));
     $('search-status').textContent = `Selected ${school.name}, ${school.city}, ${school.county} County.`;
     renderCalculator(); renderPlan(); renderProposal(); saveDraft();
-    if (window.innerWidth < 760) $('evidence').scrollIntoView({behavior: 'smooth', block: 'start'});
+    if (!state.restoringDraft) {
+      $('evidence').scrollIntoView({behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start'});
+      $('evidence-title').focus({preventScroll: true});
+    }
   }
 
   function renderForecast(school) {
     const forecast = school.heatForecast;
     $('heat-zip').textContent = forecast?.zip || 'unavailable';
-    const holder = $('forecast-days'); holder.replaceChildren();
+    const holder = $('forecast-days'); holder.replaceChildren(); holder.classList.remove('is-unavailable');
     const today = new Intl.DateTimeFormat('en-CA', {timeZone: 'America/Los_Angeles', year: 'numeric', month: '2-digit', day: '2-digit'}).format(new Date());
     const expired = !forecast?.date || forecast.date < today;
     if (!forecast || expired || !Array.isArray(forecast.days)) {
-      $('forecast-title').textContent = expired ? 'Forecast unavailable or expired' : 'Forecast unavailable';
-      $('forecast-status').textContent = expired && forecast?.date ? `The saved ZIP forecast began ${forecast.date} and is no longer current. Refresh source data to see a new forecast.` : 'No current ZIP forecast is available for this campus.';
+      $('forecast-title').textContent = 'Current forecast unavailable';
+      holder.classList.add('is-unavailable');
+      const empty = document.createElement('p'); empty.className = 'forecast-empty';
+      empty.textContent = 'Check CalHeatScore for the latest community heat outlook.';
+      holder.append(empty);
+      $('forecast-status').textContent = expired && forecast?.date ? `Saved forecast dated ${forecast.date}. Current conditions are not available in this snapshot.` : 'No current ZIP forecast is available for this campus.';
       $('forecast-status').hidden = false; return;
     }
     $('forecast-title').textContent = 'Daily heat-health forecast';
-    $('forecast-status').textContent = `Daily community ZIP forecast · snapshot ${forecast.date}. Values are forecast categories, not measured temperatures.`;
+    $('forecast-status').textContent = `Snapshot ${forecast.date}. Community forecast categories, not measured temperatures.`;
     $('forecast-status').hidden = false;
     const start = new Date(`${forecast.date}T12:00:00Z`);
     forecast.days.forEach((score, index) => {
@@ -106,26 +119,31 @@
   }
 
   function renderResults(query) {
-    const target = $('school-results'); target.replaceChildren();
+    const target = $('school-results'); target.replaceChildren(); target.classList.remove('has-results');
     const q = normalize(query);
-    if (q.length < 2) { $('search-note').textContent = 'Type at least 2 letters to find a campus.'; return; }
+    $('search-empty').hidden = q.length >= 2;
+    if (q.length < 2) { $('search-note').textContent = q.length ? 'Keep typing to find a campus.' : `Search all ${state.campuses.length.toLocaleString()} campuses by name or location.`; $('search-status').textContent = ''; return; }
     const matches = [];
     for (const school of state.campuses) {
       const searchable = normalize(`${school.name} ${school.city} ${school.county} ${school.district}`);
       if (searchable.includes(q)) { matches.push(school); if (matches.length === 50) break; }
     }
-    $('search-note').textContent = matches.length ? `Showing ${matches.length === 50 ? 'first 50' : matches.length} matching campuses. Select one for evidence.` : 'No schools found. Try a city, county, district, or a shorter name.';
+    $('school-results').classList.toggle('has-results', matches.length > 0);
+    $('search-note').textContent = matches.length ? `Showing ${matches.length === 50 ? 'first 50' : matches.length} matching ${matches.length === 1 ? 'campus' : 'campuses'}. Select one for evidence.` : 'No schools found. Try a city, county, district, or a shorter name.';
     $('search-status').textContent = matches.length ? `${matches.length} matching campuses shown.` : 'No matching campuses.';
     for (const school of matches) {
       const button = document.createElement('button'); button.type = 'button'; button.className = 'result'; button.dataset.id = school.id; button.setAttribute('aria-current', school.id === state.selectedId ? 'true' : 'false');
       const title = document.createElement('strong'); title.textContent = school.name;
-      const detail = document.createElement('span'); detail.textContent = [school.city, school.county ? `${school.county} County` : '', school.district].filter(Boolean).join(' · ');
+      const detail = document.createElement('span'); detail.textContent = [school.city, school.county ? `${school.county} County` : '', school.district].filter(Boolean).join(', ');
       button.append(title, detail); button.addEventListener('click', () => {
         selectSchool(school); map.setView([school.coordinates[1], school.coordinates[0]], 11);
       }); target.append(button);
     }
   }
   $('school-search').addEventListener('input', (event) => renderResults(event.target.value));
+  document.querySelectorAll('[data-search]').forEach((button) => button.addEventListener('click', () => {
+    $('school-search').value = button.dataset.search; renderResults(button.dataset.search); $('school-search').focus();
+  }));
   $('clear-selection').addEventListener('click', () => clearDraft());
 
   const statusLabels = {fit: 'Fits your stated assumptions', confirm: 'Needs confirmation', blocked: 'Not a fit under current answers'};
@@ -166,9 +184,9 @@
     const results = $('plan-results'); results.replaceChildren();
     const intro = document.createElement('p'); intro.className = 'plan-for';
     const school = state.campuses.find((entry) => entry.id === state.selectedId);
-    intro.textContent = `Planning candidates for ${school?.name || 'selected campus'} · based on your answers above`;
+    intro.textContent = `Planning candidates for ${school?.name || 'selected campus'}, based on your answers above`;
     const stages = document.createElement('div'); stages.className = 'plan-stages';
-    stages.append(recommendationCard('01 · NEAR-TERM SHADE', plan.nearTerm), recommendationCard('02 · FUTURE CANOPY', plan.future));
+    stages.append(recommendationCard('NEAR-TERM SHADE', plan.nearTerm), recommendationCard('FUTURE CANOPY', plan.future));
     const assumptions = document.createElement('p'); assumptions.className = 'assumption-note'; assumptions.textContent = plan.assumptions;
     results.append(intro, stages, assumptions);
     renderProposal();
@@ -177,7 +195,8 @@
   $('start-planning').addEventListener('click', () => {
     $('planner').hidden = false; $('start-planning').setAttribute('aria-expanded', 'true'); renderPlan();
     saveDraft();
-    $('planner').scrollIntoView({behavior: 'smooth', block: 'start'});
+    $('planner').scrollIntoView({behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start'});
+    $('planner-title').focus({preventScroll: true});
   });
   for (const id of ['urgency', 'existing-shade', 'planting-space', 'watering', 'maintenance', 'resources']) {
     $(id).addEventListener('change', () => { renderPlan(); saveDraft(); });
@@ -245,7 +264,7 @@
     const school = proposal.school;
     appendText(holder, 'p', 'STRATA · SCHOOL COOLING PLANNER', 'print-kicker');
     appendText(holder, 'h2', 'Shade this semester. Canopy for the future.');
-    appendText(holder, 'p', `${school.name} · ${[school.city, school.county ? `${school.county} County` : '', school.district].filter(Boolean).join(' · ')} · Proposal prepared ${new Date().toLocaleDateString()}`);
+    appendText(holder, 'p', `${school.name} · ${[school.city, school.county ? `${school.county} County` : '', school.district].filter(Boolean).join(', ')} · Proposal prepared ${new Date().toLocaleDateString()}`);
     appendText(holder, 'p', 'This proposal combines public source facts with team-entered assumptions. It is a planning conversation starter and does not document field observations or approvals.');
     appendText(holder, 'h3', 'What the public evidence says');
     const canopy = document.createElement('ul');
@@ -310,7 +329,7 @@
     for (const id of ['near-estimate', 'future-estimate']) $(id).textContent = 'Add your assumptions';
     for (const id of ['near-estimate-note', 'future-estimate-note']) $(id).textContent = 'Hypothetical planning estimate; no field capacity is known.';
     $('draft-status').textContent = 'Saved draft cleared from this device.';
-    state.restoringDraft = false; renderMap(); $('school-search').focus();
+    state.restoringDraft = false; renderMap(); renderResults($('school-search').value); $('school-search').focus();
   }
 
   function restoreDraft() {
@@ -348,7 +367,7 @@
     const {school, answers, plan, calculations} = proposal;
     const rows = [['section','field','value','source_or_definition'],
       ['campus','name',school.name,'Public campus source record'],
-      ['campus','location',[school.city, school.county, school.district].filter(Boolean).join(' · '),'Public campus source record'],
+      ['campus','location',[school.city, school.county, school.district].filter(Boolean).join(', '),'Public campus source record'],
       ['source fact','student-use area canopy',school.studentZoneCanopyPct == null ? 'Not reported' : `${school.studentZoneCanopyPct}%`,'2024 study layer; imagery acquisition date unspecified'],
       ['source fact','whole-property canopy',school.propertyCanopyPct == null ? 'Not reported' : `${school.propertyCanopyPct}%`,'2024 study layer; distinct footprint, not subtractable for usable shade'],
       ['source fact','heat forecast snapshot',school.heatForecast?.date || 'Unavailable',`ZIP-level community forecast; ZIP ${school.heatForecast?.zip || 'unavailable'}, not campus temperature`]];
@@ -377,7 +396,14 @@
   $('download-csv').addEventListener('click', downloadCSV);
   $('clear-draft').addEventListener('click', clearDraft);
 
+  document.querySelectorAll('a[href="#explore"]').forEach((link) => link.addEventListener('click', () => $('school-search').focus({preventScroll: true})));
+  $('retry-data').addEventListener('click', load);
   async function load() {
+    $('search-error').hidden = true;
+    $('search-empty').hidden = false;
+    $('school-search').disabled = true;
+    document.querySelectorAll('[data-search]').forEach((button) => { button.disabled = true; });
+    $('search-note').textContent = 'Loading school records…';
     try {
       const [campusesResponse, sourcesResponse] = await Promise.all([fetch('planner/campuses.json'), fetch('planner/sources.json')]);
       if (!campusesResponse.ok || !sourcesResponse.ok) throw new Error('School dataset is unavailable.');
@@ -385,11 +411,17 @@
       if (!Array.isArray(campusesData.campuses) || campusesData.campuses.length === 0) throw new Error('School dataset is empty.');
       state.campuses = campusesData.campuses; state.sources = sources; state.counties = countyGroups();
       $('campus-total').textContent = state.campuses.length.toLocaleString();
+      $('school-search').disabled = false;
+      document.querySelectorAll('[data-search]').forEach((button) => { button.disabled = false; });
+      renderResults($('school-search').value);
       renderMap();
       restoreDraft();
     } catch (error) {
       $('campus-total').textContent = '—';
-      $('search-note').textContent = `${error.message} School search is unavailable; use the San José research link above.`;
+      $('search-empty').hidden = true;
+      $('search-error').hidden = false;
+      $('search-error-message').textContent = 'School records couldn’t be loaded. Try again, or explore the San José research.';
+      $('search-note').textContent = 'School search is temporarily unavailable.';
       $('search-status').textContent = error.message;
     }
   }
