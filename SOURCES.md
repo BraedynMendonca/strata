@@ -10,6 +10,13 @@ Scene identifiers, acquisition dates, original asset URLs, and quality screening
 
 Landsat thermal observations provide satellite-derived land-surface temperature, not ground thermometers or personal heat exposure. Reflective bands and their indices are ML predictors; thermal band values are held out as the supervised target. The display’s derived model outputs are not independent observations.
 
+## California school cooling planner
+
+- [California Schoolyard Tree Canopy Equity Study](https://www.greenschoolyards.org/tree-canopy-equity) — statewide campus records and separate estimates for student-use areas and the whole property. The study layer is labeled 2024; the service does not specify its imagery acquisition date.
+- [CalHeatScore API documentation](https://calheatscore.calepa.ca.gov/api/) — the planner requests the selected campus ZIP code's seven-day community heat-health forecast from the public, read-only API. The official service updates at 5:00 a.m. and 8:00 a.m. Pacific Time. Strata caches results by ZIP on the device for that day and checks again after the 8:00 a.m. update; expired or unavailable results are not presented as current.
+
+The CalHeatScore value is ZIP-level forecast context, not a schoolyard temperature, historical canopy measure, or cooling estimate. The API refresh does not update the separate 2024 canopy study.
+
 ## Featured starting places (checked October 18, 2026)
 
 - [San Pedro Square Market — Visit San Jose](https://www.sanjose.org/listings/san-pedro-square-market): 87 North San Pedro Street. The listing's map metadata supplies 37.336446, -121.894151.
