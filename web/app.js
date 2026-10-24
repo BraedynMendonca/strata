@@ -91,59 +91,64 @@
   }
 
   function renderForecast(school, {loading = false, error = null} = {}) {
-    const forecast = school.heatForecast;
-    $('heat-zip').textContent = forecast?.zip || 'unavailable';
+    const forecast = school.weatherForecast;
     const holder = $('forecast-days'); holder.replaceChildren(); holder.classList.remove('is-unavailable');
-    const today = window.StrataForecast.pacificDate();
-    const expired = !forecast?.date || forecast.date < today;
-    if (!forecast || expired || !Array.isArray(forecast.days)) {
-      $('forecast-title').textContent = loading ? 'Checking today’s heat forecast' : 'Current forecast unavailable';
+    if (!forecast || !Array.isArray(forecast.highs)) {
+      $('forecast-title').textContent = loading ? 'Checking the latest forecast' : 'Forecast unavailable';
       holder.classList.add('is-unavailable');
       const empty = document.createElement('p'); empty.className = 'forecast-empty';
-      empty.textContent = loading ? 'Fetching the latest daily community heat outlook.' : 'Check CalHeatScore for the latest community heat outlook.';
+      empty.textContent = loading ? 'Fetching seven-day forecast highs near this campus.' : 'Daily forecast highs are unavailable for this campus.';
       holder.append(empty);
       $('forecast-status').textContent = loading
-        ? 'Fetching the latest daily ZIP forecast from CalHeatScore.'
+        ? 'Requesting fresh weather data for the campus coordinates.'
         : error
-          ? `The live ZIP forecast could not be loaded. ${error} Try again later or check CalHeatScore directly.`
-          : expired && forecast?.date
-            ? `The saved ZIP forecast began ${forecast.date} and is no longer current. A fresh forecast could not be confirmed.`
-            : 'No current ZIP forecast is available for this campus.';
+          ? `The live weather forecast could not be loaded. ${error}`
+          : 'No current forecast is available for this campus.';
       $('forecast-status').hidden = false; return;
     }
-    $('forecast-title').textContent = 'Daily heat-health forecast';
-    $('forecast-status').textContent = `Daily community ZIP forecast · updated ${forecast.date}. Values are forecast categories, not measured temperatures.`;
+    $('forecast-title').textContent = 'Daily forecast highs (°F)';
+    const updated = forecast.fetchedAt ? new Date(forecast.fetchedAt).toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'}) : 'just now';
+    $('forecast-status').textContent = `Open-Meteo model-grid forecast · refreshed ${updated}. Air temperatures are forecast values, not on-campus measurements.`;
     $('forecast-status').hidden = false;
-    const start = new Date(`${forecast.date}T12:00:00Z`);
-    forecast.days.forEach((score, index) => {
-      const day = new Date(start); day.setUTCDate(day.getUTCDate() + index);
-      const label = new Intl.DateTimeFormat('en-US', {weekday: 'short', timeZone: 'UTC'}).format(day);
-      const box = document.createElement('div'); box.className = `forecast-day${score == null ? ' unavailable' : ''}`;
+    forecast.dates.forEach((date, index) => {
+      const day = new Date(`${date}T12:00:00Z`);
+      const label = new Intl.DateTimeFormat('en-US', {weekday: 'short', timeZone: forecast.timezone}).format(day);
+      const high = forecast.highs[index];
+      const box = document.createElement('div'); box.className = `forecast-day${high == null ? ' unavailable' : ''}`;
       const name = document.createElement('span'); name.textContent = label;
-      const value = document.createElement('strong'); value.textContent = score == null ? 'N/A' : `Level ${score}`;
+      const value = document.createElement('strong'); value.textContent = high == null ? 'N/A' : `${Math.round(high)}°`;
       box.append(name, value); holder.append(box);
     });
   }
 
   async function refreshForecast(school) {
-    const zip = school.heatForecast?.zip;
-    if (!zip) { renderForecast(school, {error: 'No ZIP code is linked to this campus.'}); return; }
-    const existing = state.forecastRequests.get(zip);
+    const longitude = Number(school.coordinates?.[0]);
+    const latitude = Number(school.coordinates?.[1]);
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      renderForecast(school, {error: 'This campus has no usable coordinates.'}); return;
+    }
+    const key = `${latitude.toFixed(4)},${longitude.toFixed(4)}`;
+    const existing = state.forecastRequests.get(key);
     if (existing) {
-      try { school.heatForecast = await existing; }
-      catch (error) { if (school.id === state.selectedId) renderForecast(school, {error: error.message}); }
+      try { school.weatherForecast = await existing; }
+      catch (error) {
+        school.weatherForecast = null;
+        if (school.id === state.selectedId) renderForecast(school, {error: error.message});
+      }
       if (school.id === state.selectedId) { renderForecast(school); renderProposal(); }
       return;
     }
-    const request = window.StrataForecast.getForecast(zip);
-    state.forecastRequests.set(zip, request);
+    const request = window.StrataWeather.fetchWeather(latitude, longitude)
+      .then((forecast) => ({...forecast, fetchedAt: new Date().toISOString()}));
+    state.forecastRequests.set(key, request);
     try {
-      school.heatForecast = await request;
+      school.weatherForecast = await request;
       if (school.id === state.selectedId) { renderForecast(school); renderProposal(); }
     } catch (error) {
+      school.weatherForecast = null;
       if (school.id === state.selectedId) renderForecast(school, {error: error.message});
     } finally {
-      state.forecastRequests.delete(zip);
+      state.forecastRequests.delete(key);
     }
   }
 
@@ -267,7 +272,7 @@
     const sources = state.sources || {};
     return [
       ['Campus canopy dataset', sources.campuses?.name || 'Not available', sources.campuses?.studyVintage || 'Study vintage unknown', sources.campuses?.studyUrl || sources.campuses?.serviceUrl || ''],
-      ['Community heat context', sources.heatForecast?.name || 'Not available', 'Dated ZIP forecast; not a campus measurement', sources.heatForecast?.documentationUrl || sources.heatForecast?.serviceUrl || '']
+      ['Campus-area weather forecast', 'Open-Meteo Weather Forecast API', 'Seven-day model-grid daily high near campus coordinates; not an on-campus measurement', 'https://open-meteo.com/en/docs']
     ];
   }
 
@@ -301,8 +306,8 @@
     canopy.children[0].textContent = `Student-use area canopy, 2024 study layer: ${school.studentZoneCanopyPct == null ? 'not reported' : `${school.studentZoneCanopyPct}%`}.`;
     canopy.children[1].textContent = `Whole-property canopy, 2024 study layer: ${school.propertyCanopyPct == null ? 'not reported' : `${school.propertyCanopyPct}%`}. The footprints are distinct and cannot be subtracted to infer usable shade.`;
     holder.append(canopy);
-    const forecast = school.heatForecast;
-    appendText(holder, 'p', forecast?.date ? `Separate community context: ZIP ${forecast.zip || 'unknown'} forecast snapshot ${forecast.date}; this is not a campus temperature.` : 'Separate community heat forecast: unavailable or undated.');
+    const forecast = school.weatherForecast;
+    appendText(holder, 'p', forecast ? `Weather context: seven-day forecast highs near the campus coordinates, refreshed ${new Date(forecast.fetchedAt).toLocaleString()}. These are model-grid air temperatures, not schoolyard measurements.` : 'Campus-area weather context: live forecast unavailable when this proposal was prepared.');
     appendText(holder, 'h3', 'Team-confirmed planning assumptions');
     const assumptions = document.createElement('ul');
     for (const [key, label] of Object.entries(answerLabels)) {
@@ -399,7 +404,7 @@
       ['campus','location',[school.city, school.county, school.district].filter(Boolean).join(', '),'Public campus source record'],
       ['source fact','student-use area canopy',school.studentZoneCanopyPct == null ? 'Not reported' : `${school.studentZoneCanopyPct}%`,'2024 study layer; imagery acquisition date unspecified'],
       ['source fact','whole-property canopy',school.propertyCanopyPct == null ? 'Not reported' : `${school.propertyCanopyPct}%`,'2024 study layer; distinct footprint, not subtractable for usable shade'],
-      ['source fact','heat forecast snapshot',school.heatForecast?.date || 'Unavailable',`ZIP-level community forecast; ZIP ${school.heatForecast?.zip || 'unavailable'}, not campus temperature`]];
+      ['live weather forecast','seven-day daily highs (°F)',school.weatherForecast?.highs.map((value) => value == null ? 'N/A' : Math.round(value)).join(', ') || 'Unavailable',`Open-Meteo model-grid forecast near campus coordinates; refreshed ${school.weatherForecast?.fetchedAt || 'not available'}; not an on-campus measurement`]];
     for (const [key, label] of Object.entries(answerLabels)) rows.push(['user assumption',label,answerValueLabels[answers[key]] || answers[key] || 'Not confirmed','Entered by team for this campus']);
     for (const [label, recommendation] of [['near-term',plan.nearTerm],['future',plan.future]]) {
       rows.push(['recommendation',`${label} action`,recommendation.title,'Explainable planning candidate; school approval required']);

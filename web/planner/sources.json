@@ -76,18 +76,15 @@
       "Yuba"
     ]
   },
-  "heatForecast": {
-    "name": "CalHeatScore California ZIP-code daily forecast, California Environmental Protection Agency and Office of Environmental Health Hazard Assessment",
-    "serviceUrl": "https://services1.arcgis.com/PCHfdHz4GlDNAhBb/arcgis/rest/services/CalHeatScore_Live_Data_for_API_Use/FeatureServer/0",
-    "documentationUrl": "https://calheatscore.calepa.ca.gov/api/",
-    "zipAreaCount": 1721,
-    "matchedCampusCount": 8380,
-    "unmatchedCampusCount": 0,
-    "meaning": "Daily community heat-health forecast, separate from school canopy and Landsat evidence",
+  "weatherForecast": {
+    "name": "Open-Meteo Weather Forecast API",
+    "serviceUrl": "https://api.open-meteo.com/v1/forecast",
+    "documentationUrl": "https://open-meteo.com/en/docs",
+    "meaning": "Live seven-day daily maximum air-temperature forecast for the weather grid cell nearest the selected campus coordinates",
     "fields": {
-      "zip": "ZIP_CODE",
-      "date": "DATE",
-      "days": "CHS_Day_0 through CHS_Day_6; daily forecast scores 0–4; null denotes unavailable"
+      "daily": "temperature_2m_max",
+      "unit": "degrees Fahrenheit",
+      "location": "selected campus coordinates; forecast grid-cell center returned by service"
     }
   },
   "missingCampusValues": {
@@ -100,7 +97,6 @@
   "limitations": [
     "Campus canopy is a study estimate; it is not a real-time shade audit, temperature reading, or verified intervention opportunity.",
     "Student-zone and whole-property canopy describe different footprints and must not be subtracted to infer usable canopy area.",
-    "CalHeatScore is a daily ZIP-level heat-health forecast; it is not a measurement of schoolyard temperature or a seasonal climate projection.",
-    "An unmatched or unavailable ZIP forecast remains null; it is never converted to a zero-risk score."
+    "Campus-area weather is a live model-grid forecast, not a schoolyard temperature, heat-health rating, or seasonal climate projection."
   ]
 }
