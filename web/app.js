@@ -4,7 +4,7 @@
   const DRAFT_KEY = 'strata-school-planner-draft-v1';
   const canopyColor = (value) => value == null ? '#8d9991' : value < 10 ? '#c47737' : value < 25 ? '#a9a34e' : '#448a5c';
   const normalize = (value) => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
-  const state = {campuses: [], selectedId: null, campusLayer: null, countyLayer: null, markers: new Map(), sources: null, canopySummary: null, currentPlan: null, restoringDraft: false};
+  const state = {campuses: [], selectedId: null, campusLayer: null, countyLayer: null, markers: new Map(), sources: null, currentPlan: null, restoringDraft: false, forecastRequests: new Map()};
 
   const map = L.map('campus-map', {preferCanvas: true, scrollWheelZoom: false}).setView([37.15, -119.6], 5);
   const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
@@ -77,7 +77,8 @@
       $(id).parentElement.parentElement.classList.toggle('canopy-missing', value == null);
       $(id).style.width = `${Math.max(0, Math.min(100, value ?? 0))}%`;
     }
-    renderCanopyComparison(school);
+    renderForecast(school, {loading: true});
+    refreshForecast(school);
     const marker = state.markers.get(school.id);
     if (marker) marker.setStyle({radius: 7, weight: 2});
     $('school-results').querySelectorAll('.result').forEach((button) => button.setAttribute('aria-current', button.dataset.id === school.id ? 'true' : 'false'));
@@ -89,14 +90,61 @@
     }
   }
 
-  function renderCanopyComparison(school) {
-    const result = state.canopySummary?.compare(school.studentZoneCanopyPct);
-    if (!result) {
-      $('canopy-comparison').textContent = 'Student-use canopy is not reported for this campus, so a statewide comparison is unavailable.';
+  function renderForecast(school, {loading = false, error = null} = {}) {
+    const forecast = school.heatForecast;
+    $('heat-zip').textContent = forecast?.zip || 'unavailable';
+    const holder = $('forecast-days'); holder.replaceChildren(); holder.classList.remove('is-unavailable');
+    const today = window.StrataForecast.pacificDate();
+    const expired = !forecast?.date || forecast.date < today;
+    if (!forecast || expired || !Array.isArray(forecast.days)) {
+      $('forecast-title').textContent = loading ? 'Checking today’s heat forecast' : 'Current forecast unavailable';
+      holder.classList.add('is-unavailable');
+      const empty = document.createElement('p'); empty.className = 'forecast-empty';
+      empty.textContent = loading ? 'Fetching the latest daily community heat outlook.' : 'Check CalHeatScore for the latest community heat outlook.';
+      holder.append(empty);
+      $('forecast-status').textContent = loading
+        ? 'Fetching the latest daily ZIP forecast from CalHeatScore.'
+        : error
+          ? `The live ZIP forecast could not be loaded. ${error} Try again later or check CalHeatScore directly.`
+          : expired && forecast?.date
+            ? `The saved ZIP forecast began ${forecast.date} and is no longer current. A fresh forecast could not be confirmed.`
+            : 'No current ZIP forecast is available for this campus.';
+      $('forecast-status').hidden = false; return;
+    }
+    $('forecast-title').textContent = 'Daily heat-health forecast';
+    $('forecast-status').textContent = `Daily community ZIP forecast · updated ${forecast.date}. Values are forecast categories, not measured temperatures.`;
+    $('forecast-status').hidden = false;
+    const start = new Date(`${forecast.date}T12:00:00Z`);
+    forecast.days.forEach((score, index) => {
+      const day = new Date(start); day.setUTCDate(day.getUTCDate() + index);
+      const label = new Intl.DateTimeFormat('en-US', {weekday: 'short', timeZone: 'UTC'}).format(day);
+      const box = document.createElement('div'); box.className = `forecast-day${score == null ? ' unavailable' : ''}`;
+      const name = document.createElement('span'); name.textContent = label;
+      const value = document.createElement('strong'); value.textContent = score == null ? 'N/A' : `Level ${score}`;
+      box.append(name, value); holder.append(box);
+    });
+  }
+
+  async function refreshForecast(school) {
+    const zip = school.heatForecast?.zip;
+    if (!zip) { renderForecast(school, {error: 'No ZIP code is linked to this campus.'}); return; }
+    const existing = state.forecastRequests.get(zip);
+    if (existing) {
+      try { school.heatForecast = await existing; }
+      catch (error) { if (school.id === state.selectedId) renderForecast(school, {error: error.message}); }
+      if (school.id === state.selectedId) { renderForecast(school); renderProposal(); }
       return;
     }
-    const lowerPercent = Math.round(result.percentLower);
-    $('canopy-comparison').textContent = `${school.studentZoneCanopyPct}% student-use canopy. ${result.lower.toLocaleString()} of ${result.reported.toLocaleString()} reporting campuses have less; ${result.equal.toLocaleString()} share this value (${lowerPercent}% have less).`;
+    const request = window.StrataForecast.getForecast(zip);
+    state.forecastRequests.set(zip, request);
+    try {
+      school.heatForecast = await request;
+      if (school.id === state.selectedId) { renderForecast(school); renderProposal(); }
+    } catch (error) {
+      if (school.id === state.selectedId) renderForecast(school, {error: error.message});
+    } finally {
+      state.forecastRequests.delete(zip);
+    }
   }
 
   function renderResults(query) {
@@ -219,7 +267,7 @@
     const sources = state.sources || {};
     return [
       ['Campus canopy dataset', sources.campuses?.name || 'Not available', sources.campuses?.studyVintage || 'Study vintage unknown', sources.campuses?.studyUrl || sources.campuses?.serviceUrl || ''],
-      ['Statewide canopy benchmark', 'Strata calculation from reported student-use canopy values', `${state.canopySummary?.belowThreshold.toLocaleString() || 0} of ${state.canopySummary?.reported.toLocaleString() || 0} reporting campuses have under 10% student-use canopy`, sources.campuses?.studyUrl || '']
+      ['Community heat context', sources.heatForecast?.name || 'Not available', 'Dated ZIP forecast; not a campus measurement', sources.heatForecast?.documentationUrl || sources.heatForecast?.serviceUrl || '']
     ];
   }
 
@@ -253,8 +301,8 @@
     canopy.children[0].textContent = `Student-use area canopy, 2024 study layer: ${school.studentZoneCanopyPct == null ? 'not reported' : `${school.studentZoneCanopyPct}%`}.`;
     canopy.children[1].textContent = `Whole-property canopy, 2024 study layer: ${school.propertyCanopyPct == null ? 'not reported' : `${school.propertyCanopyPct}%`}. The footprints are distinct and cannot be subtracted to infer usable shade.`;
     holder.append(canopy);
-    const comparison = state.canopySummary?.compare(school.studentZoneCanopyPct);
-    appendText(holder, 'p', comparison ? `Statewide canopy context: ${state.canopySummary.belowThreshold.toLocaleString()} of ${state.canopySummary.reported.toLocaleString()} campuses with reported student-use canopy are below 10%. This campus has more reported canopy than ${comparison.lower.toLocaleString()} campuses; ${comparison.equal.toLocaleString()} share its value.` : 'Statewide canopy comparison: unavailable because this campus has no reported student-use canopy value.');
+    const forecast = school.heatForecast;
+    appendText(holder, 'p', forecast?.date ? `Separate community context: ZIP ${forecast.zip || 'unknown'} forecast snapshot ${forecast.date}; this is not a campus temperature.` : 'Separate community heat forecast: unavailable or undated.');
     appendText(holder, 'h3', 'Team-confirmed planning assumptions');
     const assumptions = document.createElement('ul');
     for (const [key, label] of Object.entries(answerLabels)) {
@@ -351,8 +399,7 @@
       ['campus','location',[school.city, school.county, school.district].filter(Boolean).join(', '),'Public campus source record'],
       ['source fact','student-use area canopy',school.studentZoneCanopyPct == null ? 'Not reported' : `${school.studentZoneCanopyPct}%`,'2024 study layer; imagery acquisition date unspecified'],
       ['source fact','whole-property canopy',school.propertyCanopyPct == null ? 'Not reported' : `${school.propertyCanopyPct}%`,'2024 study layer; distinct footprint, not subtractable for usable shade'],
-      ['derived metric','California campuses under 10% student-use canopy',`${state.canopySummary?.belowThreshold ?? 'Unavailable'} of ${state.canopySummary?.reported ?? 'Unavailable'}`, 'Calculated from valid 2024 study records; missing values excluded'],
-      ['derived metric','campuses with less student-use canopy',state.canopySummary?.compare(school.studentZoneCanopyPct)?.lower ?? 'Unavailable', 'Strictly lower reported values in the California campus dataset; ties reported separately']];
+      ['source fact','heat forecast snapshot',school.heatForecast?.date || 'Unavailable',`ZIP-level community forecast; ZIP ${school.heatForecast?.zip || 'unavailable'}, not campus temperature`]];
     for (const [key, label] of Object.entries(answerLabels)) rows.push(['user assumption',label,answerValueLabels[answers[key]] || answers[key] || 'Not confirmed','Entered by team for this campus']);
     for (const [label, recommendation] of [['near-term',plan.nearTerm],['future',plan.future]]) {
       rows.push(['recommendation',`${label} action`,recommendation.title,'Explainable planning candidate; school approval required']);
@@ -392,8 +439,6 @@
       const [campusesData, sources] = await Promise.all([campusesResponse.json(), sourcesResponse.json()]);
       if (!Array.isArray(campusesData.campuses) || campusesData.campuses.length === 0) throw new Error('School dataset is empty.');
       state.campuses = campusesData.campuses; state.sources = sources; state.counties = countyGroups();
-      state.canopySummary = window.StrataCanopyComparison.create(state.campuses);
-      $('statewide-low-canopy').textContent = `${Math.round(state.canopySummary.belowThresholdPercent)}%`;
       $('campus-total').textContent = state.campuses.length.toLocaleString();
       $('school-search').disabled = false;
       document.querySelectorAll('[data-search]').forEach((button) => { button.disabled = false; });
@@ -410,4 +455,14 @@
     }
   }
   load();
+  window.setInterval(() => {
+    const selected = state.campuses.find((school) => school.id === state.selectedId);
+    if (selected && document.visibilityState === 'visible') refreshForecast(selected);
+  }, 30 * 60 * 1000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      const selected = state.campuses.find((school) => school.id === state.selectedId);
+      if (selected) refreshForecast(selected);
+    }
+  });
 })();
