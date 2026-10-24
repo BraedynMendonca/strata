@@ -4,7 +4,7 @@
   const DRAFT_KEY = 'strata-school-planner-draft-v1';
   const canopyColor = (value) => value == null ? '#8d9991' : value < 10 ? '#c47737' : value < 25 ? '#a9a34e' : '#448a5c';
   const normalize = (value) => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
-  const state = {campuses: [], selectedId: null, campusLayer: null, countyLayer: null, markers: new Map(), sources: null, currentPlan: null, restoringDraft: false};
+  const state = {campuses: [], selectedId: null, campusLayer: null, countyLayer: null, markers: new Map(), sources: null, currentPlan: null, restoringDraft: false, forecastRequests: new Map()};
 
   const map = L.map('campus-map', {preferCanvas: true, scrollWheelZoom: false}).setView([37.15, -119.6], 5);
   const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
@@ -77,7 +77,8 @@
       $(id).parentElement.parentElement.classList.toggle('canopy-missing', value == null);
       $(id).style.width = `${Math.max(0, Math.min(100, value ?? 0))}%`;
     }
-    renderForecast(school);
+    renderForecast(school, {loading: true});
+    refreshForecast(school);
     const marker = state.markers.get(school.id);
     if (marker) marker.setStyle({radius: 7, weight: 2});
     $('school-results').querySelectorAll('.result').forEach((button) => button.setAttribute('aria-current', button.dataset.id === school.id ? 'true' : 'false'));
@@ -89,23 +90,29 @@
     }
   }
 
-  function renderForecast(school) {
+  function renderForecast(school, {loading = false, error = null} = {}) {
     const forecast = school.heatForecast;
     $('heat-zip').textContent = forecast?.zip || 'unavailable';
     const holder = $('forecast-days'); holder.replaceChildren(); holder.classList.remove('is-unavailable');
-    const today = new Intl.DateTimeFormat('en-CA', {timeZone: 'America/Los_Angeles', year: 'numeric', month: '2-digit', day: '2-digit'}).format(new Date());
+    const today = window.StrataForecast.pacificDate();
     const expired = !forecast?.date || forecast.date < today;
     if (!forecast || expired || !Array.isArray(forecast.days)) {
-      $('forecast-title').textContent = 'Current forecast unavailable';
+      $('forecast-title').textContent = loading ? 'Checking today’s heat forecast' : 'Current forecast unavailable';
       holder.classList.add('is-unavailable');
       const empty = document.createElement('p'); empty.className = 'forecast-empty';
-      empty.textContent = 'Check CalHeatScore for the latest community heat outlook.';
+      empty.textContent = loading ? 'Fetching the latest daily community heat outlook.' : 'Check CalHeatScore for the latest community heat outlook.';
       holder.append(empty);
-      $('forecast-status').textContent = expired && forecast?.date ? `Saved forecast dated ${forecast.date}. Current conditions are not available in this snapshot.` : 'No current ZIP forecast is available for this campus.';
+      $('forecast-status').textContent = loading
+        ? 'Fetching the latest daily ZIP forecast from CalHeatScore.'
+        : error
+          ? `The live ZIP forecast could not be loaded. ${error} Try again later or check CalHeatScore directly.`
+          : expired && forecast?.date
+            ? `The saved ZIP forecast began ${forecast.date} and is no longer current. A fresh forecast could not be confirmed.`
+            : 'No current ZIP forecast is available for this campus.';
       $('forecast-status').hidden = false; return;
     }
     $('forecast-title').textContent = 'Daily heat-health forecast';
-    $('forecast-status').textContent = `Snapshot ${forecast.date}. Community forecast categories, not measured temperatures.`;
+    $('forecast-status').textContent = `Daily community ZIP forecast · updated ${forecast.date}. Values are forecast categories, not measured temperatures.`;
     $('forecast-status').hidden = false;
     const start = new Date(`${forecast.date}T12:00:00Z`);
     forecast.days.forEach((score, index) => {
@@ -116,6 +123,28 @@
       const value = document.createElement('strong'); value.textContent = score == null ? 'N/A' : `Level ${score}`;
       box.append(name, value); holder.append(box);
     });
+  }
+
+  async function refreshForecast(school) {
+    const zip = school.heatForecast?.zip;
+    if (!zip) { renderForecast(school, {error: 'No ZIP code is linked to this campus.'}); return; }
+    const existing = state.forecastRequests.get(zip);
+    if (existing) {
+      try { school.heatForecast = await existing; }
+      catch (error) { if (school.id === state.selectedId) renderForecast(school, {error: error.message}); }
+      if (school.id === state.selectedId) { renderForecast(school); renderProposal(); }
+      return;
+    }
+    const request = window.StrataForecast.getForecast(zip);
+    state.forecastRequests.set(zip, request);
+    try {
+      school.heatForecast = await request;
+      if (school.id === state.selectedId) { renderForecast(school); renderProposal(); }
+    } catch (error) {
+      if (school.id === state.selectedId) renderForecast(school, {error: error.message});
+    } finally {
+      state.forecastRequests.delete(zip);
+    }
   }
 
   function renderResults(query) {
@@ -426,4 +455,14 @@
     }
   }
   load();
+  window.setInterval(() => {
+    const selected = state.campuses.find((school) => school.id === state.selectedId);
+    if (selected && document.visibilityState === 'visible') refreshForecast(selected);
+  }, 30 * 60 * 1000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      const selected = state.campuses.find((school) => school.id === state.selectedId);
+      if (selected) refreshForecast(selected);
+    }
+  });
 })();
